@@ -8,14 +8,14 @@ import (
 	"os"
 	"time"
 
+	"cloud.google.com/go/vertexai/genai"
 	"github.com/gin-gonic/gin"
-	"github.com/google/generative-ai-go/genai"
 	"github.com/redis/go-redis/v9"
-	"google.golang.org/api/option"
 )
 
 var rdb *redis.Client
-var geminiClient *genai.Client
+var vertexClient *genai.Client
+var projectID string
 
 type LLMRequest struct {
 	Prompt string `json:"prompt"`
@@ -42,16 +42,17 @@ func init() {
 	}
 	log.Println("Connected to Redis successfully.")
 
-	// Initialize Google AI Studio client
-	apiKey := os.Getenv("GEMINI_API_KEY")
-	if apiKey == "" {
-		log.Println("WARNING: GEMINI_API_KEY environment variable is not set. Gateway will fall back to mocked responses.")
+	// Initialize Vertex AI client
+	projectID = os.Getenv("GCP_PROJECT_ID")
+	if projectID == "" {
+		log.Println("WARNING: GCP_PROJECT_ID environment variable is not set. Gateway will fall back to mocked responses.")
 	} else {
-		geminiClient, err = genai.NewClient(ctx, option.WithAPIKey(apiKey))
+		// Use application default credentials
+		vertexClient, err = genai.NewClient(ctx, projectID, "us-central1")
 		if err != nil {
-			log.Fatalf("Failed to initialize Gemini client: %v", err)
+			log.Fatalf("Failed to initialize Vertex AI client: %v", err)
 		}
-		log.Println("Initialized Gemini client successfully.")
+		log.Println("Initialized Vertex AI client successfully.")
 	}
 }
 
@@ -86,20 +87,21 @@ func handleCompletion(c *gin.Context) {
 		return
 	}
 
-	// 2. Cache Miss - Call Primary Model (Google AI Studio)
+	// 2. Cache Miss - Call Primary Model (GCP Vertex AI)
 	log.Printf("[CACHE MISS] Forwarding request to Primary Model")
-	response, err := callGeminiAPI(ctx, req.Prompt)
+	response, err := callVertexAI(ctx, req.Prompt)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Gemini API call failed: %v", err)})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Vertex AI call failed: %v", err)})
 		return
 	}
 
 	// 3. Shadow Routing (Asynchronous)
+	// We duplicate the request to an experimental model to compare outputs offline
 	go func(prompt string) {
 		shadowCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		log.Printf("[SHADOW ROUTING] Sending prompt asynchronously...")
-		_ = simulateExperimentalModelCall(shadowCtx, prompt)
+		_ = simulateExperimentalModelCall(shadowCtx, prompt) // Ignore error in shadow route
 	}(req.Prompt)
 
 	// 4. Save to Cache
@@ -114,15 +116,15 @@ func handleCompletion(c *gin.Context) {
 	})
 }
 
-// callGeminiAPI calls Gemini 1.5 Flash on Google AI Studio
-func callGeminiAPI(ctx context.Context, prompt string) (string, error) {
-	if geminiClient == nil {
+// callVertexAI calls Gemini 1.5 Flash on Google Cloud, or falls back to a mock if GCP_PROJECT_ID is not set.
+func callVertexAI(ctx context.Context, prompt string) (string, error) {
+	if vertexClient == nil {
 		// Fallback mock mode
 		time.Sleep(500 * time.Millisecond)
-		return fmt.Sprintf("[Mocked] AI response to: %s", prompt), nil
+		return fmt.Sprintf("[Mocked] Vertex AI response to: %s", prompt), nil
 	}
 
-	model := geminiClient.GenerativeModel("gemini-1.5-flash")
+	model := vertexClient.GenerativeModel("gemini-1.5-flash-001")
 	model.SetTemperature(0.2)
 
 	resp, err := model.GenerateContent(ctx, genai.Text(prompt))
