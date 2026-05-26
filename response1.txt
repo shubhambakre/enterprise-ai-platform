@@ -1,0 +1,2 @@
+{"error":"Vertex AI call failed: rpc error: code = NotFound desc = Publisher Model `projects/loca-poc/locations/us-central1/publishers/google/models/gemini-1.5-flash-001` was not found or your project does not have access to it. Please ensure you are using a valid model version. For more information, see: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions"}
+Time: 0.430547s
