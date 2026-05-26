@@ -162,29 +162,29 @@
         
         <div class="node">
             <div class="node-icon">☁️</div>
-            <div class="node-title">GCP Vertex AI</div>
-            <div class="node-desc">Project: loca-poc</div>
+            <div class="node-title">Google AI Studio</div>
+            <div class="node-desc">Auth: GEMINI_API_KEY</div>
         </div>
     </div>
 
     <div class="test-case">
         <div class="test-header header-error">
-            <span>Test 1: Live Cloud Connection (Model Access Error)</span>
+            <span>Test 1: Live Cloud Connection (API Key Blocked)</span>
             <span>May 25, 2026</span>
         </div>
         <div class="test-body">
             <span class="label">REQUEST (cURL)</span>
             curl -X POST http://localhost:8080/v1/completions \ <br>
             &nbsp;&nbsp;-H "Content-Type: application/json" \ <br>
-            &nbsp;&nbsp;-d '{"prompt": "Explain Google Cloud Vertex AI in 1 sentence.", "model": "gemini-1.5-flash"}'
+            &nbsp;&nbsp;-d '{"prompt": "What is Google Cloud Pub/Sub?", "model": "gemini-1.5-flash"}'
             <br><br>
             
-            <span class="label">RESPONSE (Gateway -> GCP)</span>
+            <span class="label">RESPONSE (Gateway -> Google AI)</span>
             {<br>
-            &nbsp;&nbsp;"error": "Vertex AI call failed: rpc error: code = NotFound desc = <span class="highlight-error">Publisher Model `projects/loca-poc/locations/us-central1/publishers/google/models/gemini-1.5-flash-001` was not found or your project does not have access to it.</span> Please ensure you are using a valid model version..."<br>
+            &nbsp;&nbsp;"error": "Gemini API call failed: googleapi: Error 403: <span class="highlight-error">Requests to this API generativelanguage.googleapis.com method google.ai.generativelanguage.v1beta.GenerativeService.GenerateContent are blocked.</span>\nerror details: name = ErrorInfo reason = API_KEY_SERVICE_BLOCKED domain = googleapis.com..."<br>
             }
             <br>
-            <div class="metric">⏱️ Latency: 430ms</div>
+            <div class="metric">⏱️ Latency: 179ms</div>
         </div>
     </div>
 
@@ -214,7 +214,7 @@
     </div>
 
     <p style="text-align: center; color: var(--text-secondary); margin-top: 40px;">
-        <strong>Diagnosis:</strong> The Go Gateway successfully established an authenticated connection to Google Cloud project <code>loca-poc</code>. However, the project does not currently have access to the Gemini 1.5 Flash model in the <code>us-central1</code> region (often requires accepting Vertex AI terms of service or enabling the model in Model Garden). Fix this in the console to achieve the green success state!
+        <strong>Diagnosis:</strong> The Go Gateway successfully connected using your provided <code>GEMINI_API_KEY</code>. Google validated the key (project 598179013064), but returned a 403 Forbidden because the Generative Language API is either not enabled on that project, or API key access is restricted. Once you enable it in the GCP Console, the Gateway will immediately start returning the green success state!
     </p>
 
 </div>
