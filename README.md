@@ -27,9 +27,11 @@ This monorepo contains three core services:
    - PostgreSQL + pgvector (Streaming RAG DB)
    - NATS (Agent Orchestrator Queue)
 
-2. **Run the AI Gateway**
+3. **Start the AI Gateway (Go + Redis + Vertex AI)**
+   The Gateway intercepts requests, checks Redis for semantic cache hits, and forwards misses to GCP Vertex AI.
    ```bash
    cd gateway
+   export GCP_PROJECT_ID="your-gcp-project-id" # Optional: Will fall back to mock without this
    go build -o gateway-bin main.go
    ./gateway-bin
    ```
