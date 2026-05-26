@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise AI Infrastructure Platform | System Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-hover: #174ea6;
+            --surface: #ffffff;
+            --background: #f8f9fa;
+            --text-main: #202124;
+            --text-secondary: #5f6368;
+            --border: #dadce0;
+            --success: #1e8e3e;
+            --code-bg: #f1f3f4;
+            --radius: 8px;
+            --shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+            --shadow-hover: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 24px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 500;
+            margin: 40px 0 16px;
+            color: var(--primary);
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 500;
+            margin: 24px 0 12px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .badge {
+            background: #e8f0fe;
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 16px;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 13px;
+            color: #37474f;
+            border: 1px solid var(--border);
+        }
+
+        code {
+            font-family: 'Roboto Mono', monospace;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13.5px;
+            color: #d81b60;
+        }
+        
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        ul {
+            color: var(--text-secondary);
+            padding-left: 24px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .tradeoffs {
+            background: #fce8e6;
+            border-left: 4px solid #d93025;
+            padding: 16px 24px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin: 24px 0;
+        }
+
+        .tradeoffs h4 {
+            margin: 0 0 8px 0;
+            color: #d93025;
+            font-size: 16px;
+        }
+
+        .tradeoffs p {
+            color: #3c4043;
+            margin: 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+            border-top: 1px solid var(--border);
+            margin-top: 64px;
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container header-content">
+        <h1>Enterprise AI Platform</h1>
+        <div style="font-size: 14px; color: var(--text-secondary);">System Design Document</div>
+    </div>
+</header>
+
+<div class="container" style="padding-top: 40px;">
+
+    <div class="badge">Google Cloud L5 Standard</div>
+    <p style="font-size: 18px; color: var(--text-main); max-width: 800px;">
+        A unified, microservices-based AI Infrastructure Platform designed to handle high-concurrency LLM workflows, real-time streaming RAG, and distributed agent orchestration.
+    </p>
+
+    <h2>Platform Architecture</h2>
+    
+    <div class="grid">
+        <div class="card">
+            <h3>1. AI Gateway</h3>
+            <p>A high-performance HTTP reverse proxy written in Go. Intercepts LLM requests to optimize cost and latency.</p>
+            <ul>
+                <li><strong>Semantic Caching:</strong> Uses Redis to cache exact or semantically similar prompts, reducing latency from 500ms to <5ms.</li>
+                <li><strong>Shadow Routing:</strong> Asynchronously duplicates production traffic to experimental models for offline evaluation without impacting user latency.</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h3>2. Streaming RAG Engine</h3>
+            <p>A Go and PostgreSQL (`pgvector`) service designed for mutating, real-time data environments.</p>
+            <ul>
+                <li><strong>WebSocket Ingestion:</strong> Accepts continuous data streams.</li>
+                <li><strong>Transaction Batching:</strong> Uses Go channels and background workers to batch upserts, preventing database connection saturation under high load.</li>
+                <li><strong>HNSW Indexing:</strong> Queries run directly in Postgres using approximate nearest neighbor search.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>3. Agent Orchestrator</h3>
+            <p>A distributed execution engine utilizing NATS message queues to decouple reasoning from execution.</p>
+            <ul>
+                <li><strong>Go Router:</strong> Decomposes complex user goals into atomic sub-tasks.</li>
+                <li><strong>NATS Broker:</strong> Provides lightweight, high-throughput message routing with Request-Reply patterns.</li>
+                <li><strong>Python Workers:</strong> Stateless nodes that listen to Queue Groups, automatically load-balancing tasks across the cluster.</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2>System Design & Trade-offs</h2>
+
+    <p>Designing this platform required several critical architectural decisions focused on scalability, consistency, and latency.</p>
+
+    <div class="tradeoffs">
+        <h4>Why NATS instead of Kafka for Agent Orchestration?</h4>
+        <p>Kafka is excellent for persistent, high-throughput event streaming, but it introduces significant operational overhead and latency. For AI agent orchestration, tasks are typically ephemeral and require synchronous Request-Reply patterns (the Go router needs the Python worker's result immediately). NATS is extremely lightweight, inherently supports Request-Reply over queues, and has sub-millisecond latency, making it the superior choice for intra-agent communication.</p>
+    </div>
+
+    <div class="tradeoffs">
+        <h4>Why Batching in WebSockets?</h4>
+        <p>A naive WebSocket implementation writes to the database immediately upon receiving a frame. At 10,000 messages/sec, this creates 10,000 discrete transactions, overwhelming PostgreSQL's connection pool. By buffering events in a Go channel and flushing them via a single bulk transaction every 500ms (or when the buffer hits 100), we achieve massive throughput while maintaining ACID guarantees.</p>
+    </div>
+
+    <h2>Local Development Guide</h2>
+
+    <div class="card">
+        <h3>1. Start the Infrastructure</h3>
+        <p>Spin up Redis, PostgreSQL (pgvector), and NATS locally.</p>
+        <pre><code>docker compose up -d</code></pre>
+
+        <h3>2. Run the Gateway</h3>
+        <p>Start the API Gateway to test semantic caching.</p>
+        <pre><code>cd gateway
+go run main.go</code></pre>
+        <p>Test with cURL (run twice to see cache hit):</p>
+        <pre><code>curl -X POST http://localhost:8080/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "How do I reset my password?", "model": "gemini-pro"}'</code></pre>
+
+        <h3>3. Run the Streaming RAG</h3>
+        <p>Start the ingestion engine and query it.</p>
+        <pre><code>cd streaming-rag
+go run main.go</code></pre>
+
+        <h3>4. Run the Orchestrator</h3>
+        <p>Start the Python worker and Go router in separate terminals.</p>
+        <pre><code># Terminal A: Start Python Worker
+cd orchestrator/worker
+source venv/bin/activate
+python worker.py
+
+# Terminal B: Start Go Router
+cd orchestrator/router
+go run main.go</code></pre>
+    </div>
+
+</div>
+
+<div class="footer">
+    Created by Shubham Bakre &middot; Enterprise AI Platform
+</div>
+
+</body>
+</html>
