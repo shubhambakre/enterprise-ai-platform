@@ -124,7 +124,7 @@ func callVertexAI(ctx context.Context, prompt string) (string, error) {
 		return fmt.Sprintf("[Mocked] Vertex AI response to: %s", prompt), nil
 	}
 
-	model := vertexClient.GenerativeModel("gemini-1.5-flash-001")
+	model := vertexClient.GenerativeModel("gemini-2.5-flash")
 	model.SetTemperature(0.2)
 
 	resp, err := model.GenerateContent(ctx, genai.Text(prompt))

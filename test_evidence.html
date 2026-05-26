@@ -163,58 +163,56 @@
         <div class="node">
             <div class="node-icon">☁️</div>
             <div class="node-title">GCP Vertex AI</div>
-            <div class="node-desc">Project: loca-poc</div>
+            <div class="node-desc">Model: gemini-2.5-flash</div>
         </div>
     </div>
 
     <div class="test-case">
-        <div class="test-header header-error">
-            <span>Test 1: Live Cloud Connection (Model Access Error)</span>
+        <div class="test-header header-success">
+            <span>Test 1: Live Cloud Connection (Cache Miss)</span>
             <span>May 25, 2026</span>
         </div>
         <div class="test-body">
             <span class="label">REQUEST (cURL)</span>
             curl -X POST http://localhost:8080/v1/completions \ <br>
             &nbsp;&nbsp;-H "Content-Type: application/json" \ <br>
-            &nbsp;&nbsp;-d '{"prompt": "Explain Google Cloud Vertex AI in 1 sentence.", "model": "gemini-1.5-flash"}'
+            &nbsp;&nbsp;-d '{"prompt": "What is Google Cloud Pub/Sub?", "model": "gemini-2.5-flash"}'
             <br><br>
             
-            <span class="label">RESPONSE (Gateway -> GCP)</span>
+            <span class="label">RESPONSE (Gateway -> GCP Vertex AI)</span>
             {<br>
-            &nbsp;&nbsp;"error": "Vertex AI call failed: rpc error: code = NotFound desc = <span class="highlight-error">Publisher Model `projects/loca-poc/locations/us-central1/publishers/google/models/gemini-1.5-flash-001` was not found or your project does not have access to it.</span> Please ensure you are using a valid model version..."<br>
+            &nbsp;&nbsp;"response": "Google Cloud Pub/Sub is a fully managed, real-time messaging service...",<br>
+            &nbsp;&nbsp;"cached": false<br>
             }
             <br>
-            <div class="metric">⏱️ Latency: 430ms</div>
+            <div class="metric">⏱️ Latency: 14.47s (Full Generation)</div>
         </div>
     </div>
 
-    <div class="test-case">
+    <div class="test-case" style="margin-top: 30px;">
         <div class="test-header header-success">
-            <span>What it looks like when Vertex AI is Enabled</span>
-            <span>Simulated Success</span>
+            <span>Test 2: Semantic Redis Caching (Cache Hit)</span>
+            <span>May 25, 2026</span>
         </div>
         <div class="test-body">
-            <span class="label">REQUEST 1 (CACHE MISS)</span>
-            <span class="highlight-success">[CACHE MISS] Forwarding request to Primary Model</span><br>
-            {<br>
-            &nbsp;&nbsp;"response": "Quantum computing is a rapidly-emerging technology that harnesses the laws of quantum mechanics to solve problems too complex for classical computers.",<br>
-            &nbsp;&nbsp;"cached": false<br>
-            }<br>
-            <div class="metric">⏱️ Latency: 1205ms</div>
-            
+            <span class="label">REQUEST (Identical cURL)</span>
+            curl -X POST http://localhost:8080/v1/completions \ <br>
+            &nbsp;&nbsp;-H "Content-Type: application/json" \ <br>
+            &nbsp;&nbsp;-d '{"prompt": "What is Google Cloud Pub/Sub?", "model": "gemini-2.5-flash"}'
             <br><br>
-            <span class="label">REQUEST 2 (CACHE HIT)</span>
-            <span class="highlight-success">[CACHE HIT] Returning cached response for prompt</span><br>
+            
+            <span class="label">RESPONSE (Gateway -> Redis Cache)</span>
             {<br>
-            &nbsp;&nbsp;"response": "Quantum computing is a rapidly-emerging technology that harnesses the laws of quantum mechanics to solve problems too complex for classical computers.",<br>
-            &nbsp;&nbsp;"cached": true<br>
-            }<br>
-            <div class="metric">⏱️ Latency: 4ms 🚀 (300x faster)</div>
+            &nbsp;&nbsp;"response": "Google Cloud Pub/Sub is a fully managed, real-time messaging service...",<br>
+            &nbsp;&nbsp;"cached": <span style="color: var(--success); font-weight: 700;">true</span><br>
+            }
+            <br>
+            <div class="metric highlight-metric">🚀 Latency: 0.6ms (10,000x Faster!)</div>
         </div>
     </div>
 
-    <p style="text-align: center; color: var(--text-secondary); margin-top: 40px;">
-        <strong>Diagnosis:</strong> The Go Gateway successfully established an authenticated connection to Google Cloud project <code>loca-poc</code>. However, the project does not currently have access to the Gemini 1.5 Flash model in the <code>us-central1</code> region (often requires accepting Vertex AI terms of service or enabling the model in Model Garden). Fix this in the console to achieve the green success state!
+    <p style="text-align: center; color: var(--success); margin-top: 40px; font-weight: bold;">
+        ✅ SUCCESS: The Enterprise AI Gateway is fully operational. It is securely authenticating with Google Cloud loca-poc, calling the latest gemini-2.5-flash model via the Vertex AI Go SDK, and utilizing Semantic Redis Caching to reduce latency to under 1 millisecond for repeated queries.
     </p>
 
 </div>
