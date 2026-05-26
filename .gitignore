@@ -1,0 +1,20 @@
+# Environment Variables
+.env
+.env.local
+
+# Binaries
+gateway/gateway-bin
+*-bin
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
+
+# Logs
+*.log
+
+# IDEs
+.idea/
+.vscode/
+*.swp
