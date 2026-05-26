@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Gateway | Test Evidence & Request Flow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --success: #1e8e3e;
+            --error: #d93025;
+            --surface: #ffffff;
+            --background: #f8f9fa;
+            --text-main: #202124;
+            --text-secondary: #5f6368;
+            --border: #dadce0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: 'Google Sans', sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            margin-bottom: 40px;
+        }
+
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        /* Line connecting the nodes */
+        .flow-container::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 50px;
+            right: 50px;
+            height: 4px;
+            background: var(--border);
+            z-index: 0;
+            border-radius: 4px;
+        }
+
+        .node {
+            background: var(--surface);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius);
+            padding: 20px;
+            width: 220px;
+            text-align: center;
+            z-index: 1;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .node-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .node-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .node-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .test-case {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .test-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .header-error { background: #fce8e6; color: var(--error); border-bottom-color: #fad2cf; }
+        .header-success { background: #e6f4ea; color: var(--success); border-bottom-color: #ceead6; }
+
+        .test-body {
+            padding: 24px;
+            background: #202124;
+            color: #e8eaed;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+
+        .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9aa0a6;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .highlight-error { color: #f28b82; }
+        .highlight-success { color: #81c995; }
+        
+        .metric {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            padding: 4px 12px;
+            border-radius: 16px;
+            margin-top: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>System Test Evidence: Vertex AI Integration</h1>
+
+    <div class="flow-container">
+        <div class="node">
+            <div class="node-icon">💻</div>
+            <div class="node-title">Client</div>
+            <div class="node-desc">Sends JSON POST to port 8080</div>
+        </div>
+        
+        <div class="node">
+            <div class="node-icon">🛡️</div>
+            <div class="node-title">Go Gateway</div>
+            <div class="node-desc">Checks Redis Cache. If miss, calls SDK.</div>
+        </div>
+        
+        <div class="node">
+            <div class="node-icon">☁️</div>
+            <div class="node-title">GCP Vertex AI</div>
+            <div class="node-desc">Project: loca-ioc</div>
+        </div>
+    </div>
+
+    <div class="test-case">
+        <div class="test-header header-error">
+            <span>Test 1: Live Cloud Connection (Permission Error)</span>
+            <span>May 25, 2026</span>
+        </div>
+        <div class="test-body">
+            <span class="label">REQUEST (cURL)</span>
+            curl -X POST http://localhost:8080/v1/completions \ <br>
+            &nbsp;&nbsp;-H "Content-Type: application/json" \ <br>
+            &nbsp;&nbsp;-d '{"prompt": "Explain Quantum Computing in 1 sentence.", "model": "gemini-1.5-flash"}'
+            <br><br>
+            
+            <span class="label">RESPONSE (Gateway -> GCP)</span>
+            {<br>
+            &nbsp;&nbsp;"error": "Vertex AI call failed: rpc error: code = PermissionDenied desc = <span class="highlight-error">Permission denied on resource project loca-ioc.</span>\nerror details: name = ErrorInfo reason = CONSUMER_INVALID domain = googleapis.com..."<br>
+            }
+            <br>
+            <div class="metric">⏱️ Latency: 470ms</div>
+        </div>
+    </div>
+
+    <div class="test-case">
+        <div class="test-header header-success">
+            <span>What it looks like when Vertex AI is Enabled</span>
+            <span>Simulated Success</span>
+        </div>
+        <div class="test-body">
+            <span class="label">REQUEST 1 (CACHE MISS)</span>
+            <span class="highlight-success">[CACHE MISS] Forwarding request to Primary Model</span><br>
+            {<br>
+            &nbsp;&nbsp;"response": "Quantum computing is a rapidly-emerging technology that harnesses the laws of quantum mechanics to solve problems too complex for classical computers.",<br>
+            &nbsp;&nbsp;"cached": false<br>
+            }<br>
+            <div class="metric">⏱️ Latency: 1205ms</div>
+            
+            <br><br>
+            <span class="label">REQUEST 2 (CACHE HIT)</span>
+            <span class="highlight-success">[CACHE HIT] Returning cached response for prompt</span><br>
+            {<br>
+            &nbsp;&nbsp;"response": "Quantum computing is a rapidly-emerging technology that harnesses the laws of quantum mechanics to solve problems too complex for classical computers.",<br>
+            &nbsp;&nbsp;"cached": true<br>
+            }<br>
+            <div class="metric">⏱️ Latency: 4ms 🚀 (300x faster)</div>
+        </div>
+    </div>
+
+    <p style="text-align: center; color: var(--text-secondary); margin-top: 40px;">
+        <strong>Diagnosis:</strong> The Go Gateway successfully established an authenticated connection to Google Cloud using your local credentials. However, the GCP Project <code>loca-ioc</code> does not have the Vertex AI API enabled (or your user lacks IAM permissions). Enable the API in the GCP Console to achieve the green success state!
+    </p>
+
+</div>
+
+</body>
+</html>
